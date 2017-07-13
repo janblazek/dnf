@@ -48,11 +48,8 @@ class MultiFileProgressMeter(dnf.callback.DownloadProgress):
         self.rate_average = rate_average
         self.unknown_progres = 0
         self.total_drpm = 0
-<<<<<<< HEAD
         self.isatty = sys.stdout.isatty()
-=======
         self.multi_download_id = None
->>>>>>> use parallel downloading of metadata
 
     def message(self, msg):
         dnf.util._terminal_messenger('write_flush', msg, self.fo)
