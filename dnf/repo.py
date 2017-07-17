@@ -108,6 +108,8 @@ def _pkg2payload(pkg, progress, *factories):
 def _download_metadata(repos):
     def start():
         for repo in repos:
+            if repo.repo_gpgcheck:
+                dnf.crypto.import_repo_keys(repo)
             repo._md_pload._text = repo.name
             repo._md_pload._download_size = 0.0
             targets.append(repo._librepo_metadata_target())
@@ -845,6 +847,7 @@ class Repo(dnf.conf.RepoConf):
             'progresscb': self._md_pload._progress_cb,
             'mirrorfailurecb': self._md_pload._mirror_failure_cb,
             'endcb': self._md_pload._download_end_cb,
+            'gnupghomedir': self._pubring_dir
         }
 
         return librepo.MetadataTarget(**target_dct)
