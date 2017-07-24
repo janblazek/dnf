@@ -534,10 +534,8 @@ class MDPayload(dnf.callback.Payload):
             repo._replace_metadata(handle)
 
             # get md from the cache now:
-            repo._handle = repo._handle_new_local(repo._cachedir)
-            repo.metadata = repo._handle_load(repo._get_handle())
+            repo._try_cache()
             repo.metadata.fresh = True
-            repo._expired = False
         except (dnf.repo._DetailedLibrepoError, shutil.Error):
             repo._expired = True
             if not repo.skip_if_unavailable:
@@ -745,6 +743,7 @@ class Repo(dnf.conf.RepoConf):
         result = handle._perform()
         if handle.progresscb:
             self._md_pload.end()
+
         return Metadata(result, handle)
 
     def _handle_load_with_pubring(self, handle):
