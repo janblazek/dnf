@@ -226,7 +226,7 @@ class ProvidesCommand(Command):
     provides command.
     """
 
-    aliases = ('provides', 'whatprovides')
+    aliases = ('provides', 'whatprovides', 'prov', 'wprov',)
     summary = _('find what package provides the given value')
 
     @staticmethod
@@ -248,7 +248,7 @@ class CheckUpdateCommand(Command):
     check-update command.
     """
 
-    aliases = ('check-update', 'check-upgrade')
+    aliases = ('check-update', 'check-upgrade', 'ch-up', 'c-up', 'chup', 'cup',)
     summary = _('check for available package upgrades')
 
     @staticmethod
@@ -289,7 +289,7 @@ class RepoPkgsCommand(Command):
     class CheckUpdateSubCommand(SubCommand):
         """Implementation of the info sub-command."""
 
-        aliases = ('check-update',)
+        aliases = ('check-update', 'ch-up', 'c-up', 'chup', 'cup',)
 
         def configure(self):
             demands = self.cli.demands
@@ -366,7 +366,7 @@ class RepoPkgsCommand(Command):
     class InstallSubCommand(SubCommand):
         """Implementation of the install sub-command."""
 
-        aliases = ('install',)
+        aliases = ('install', 'in',)
 
         def configure(self):
             demands = self.cli.demands
@@ -417,7 +417,7 @@ class RepoPkgsCommand(Command):
     class MoveToSubCommand(SubCommand):
         """Implementation of the move-to sub-command."""
 
-        aliases = ('move-to',)
+        aliases = ('move-to', 'm-to', 'mto',)
 
         def configure(self):
             demands = self.cli.demands
@@ -472,7 +472,7 @@ class RepoPkgsCommand(Command):
     class ReinstallOldSubCommand(SubCommand):
         """Implementation of the reinstall-old sub-command."""
 
-        aliases = ('reinstall-old',)
+        aliases = ('reinstall-old', 'rei-old', 'rei-o',)
 
         def configure(self):
             demands = self.cli.demands
@@ -529,7 +529,7 @@ class RepoPkgsCommand(Command):
     class ReinstallSubCommand(SubCommand):
         """Implementation of the reinstall sub-command."""
 
-        aliases = ('reinstall',)
+        aliases = ('reinstall', 'rei',)
 
         def __init__(self, cli):
             """Initialize the command."""
@@ -560,7 +560,7 @@ class RepoPkgsCommand(Command):
     class RemoveOrDistroSyncSubCommand(SubCommand):
         """Implementation of the remove-or-distro-sync sub-command."""
 
-        aliases = ('remove-or-distro-sync',)
+        aliases = ('remove-or-distro-sync', 'rm-dist',)
 
         def configure(self):
             demands = self.cli.demands
@@ -622,7 +622,7 @@ class RepoPkgsCommand(Command):
     class RemoveOrReinstallSubCommand(SubCommand):
         """Implementation of the remove-or-reinstall sub-command."""
 
-        aliases = ('remove-or-reinstall',)
+        aliases = ('remove-or-reinstall', 'rm-rei',)
 
         def configure(self):
             demands = self.cli.demands
@@ -671,7 +671,7 @@ class RepoPkgsCommand(Command):
     class RemoveSubCommand(SubCommand):
         """Implementation of the remove sub-command."""
 
-        aliases = ('remove',)
+        aliases = ('remove', 'rm',)
 
         def configure(self):
             demands = self.cli.demands
@@ -711,7 +711,7 @@ class RepoPkgsCommand(Command):
     class UpgradeSubCommand(SubCommand):
         """Implementation of the upgrade sub-command."""
 
-        aliases = ('upgrade', 'upgrade-to')
+        aliases = ('upgrade', 'upgrade-to', 'up', 'up-to',)
 
         def configure(self):
             demands = self.cli.demands
@@ -813,7 +813,7 @@ class HistoryCommand(Command):
     history command.
     """
 
-    aliases = ('history',)
+    aliases = ('history', 'hist',)
     summary = _('display, or use, the transaction history')
 
     @staticmethod

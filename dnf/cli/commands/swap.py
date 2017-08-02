@@ -29,7 +29,7 @@ class SwapCommand(commands.Command):
     """A class containing methods needed by the cli to execute the swap command.
     """
 
-    aliases = ('swap',)
+    aliases = ('swap', 'sw',)
     summary = _('run an interactive dnf mod for remove and install one spec')
 
     @staticmethod
