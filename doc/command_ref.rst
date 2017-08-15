@@ -351,7 +351,7 @@ For an explanation of ``<transaction-spec>`` see :ref:`\specifying_transactions-
 Auto Remove Command
 -------------------
 
-``alias: arm``
+``alias: auto-rm``
 
 ``dnf [options] autoremove``
 
@@ -392,7 +392,7 @@ Check Command
 Check Update Command
 --------------------
 
-``alias: check-upgrade, ch-up, c-up, chup, cup``
+``alias: check-upgrade, ch-up, chup``
 
 ``dnf [options] check-update [<package-specs>...]``
 
@@ -481,7 +481,7 @@ Erase Command
 Group Command
 -------------
 
-``alias: groups, grp``
+``aliases: groups, grp``
 
 Groups are virtual collections of packages. DNF keeps track of groups that the user selected ("marked") installed and can manipulate the comprising packages with simple commands.
 
@@ -722,7 +722,7 @@ This command by default does not force a sync of expired metadata. See also :ref
 Makecache Command
 -----------------
 
-``alias: mc, refresh, ref``
+``aliases: mc, refresh, ref``
 
 ``dnf [options] makecache``
     Downloads and caches in binary format metadata for all known repos. Tries to
@@ -759,7 +759,7 @@ Mark Command
 Provides Command
 ----------------
 
-``alias: whatprovides, prov, wprov``
+``aliases: whatprovides, prov, wprov``
 
 ``dnf [options] provides <provide-spec>``
     Finds the packages providing the given ``<provide-spec>``. This is useful
@@ -774,7 +774,7 @@ This command by default does not force a sync of expired metadata. See also :ref
 Reinstall Command
 -----------------
 
-``alias: rei, ri``
+``aliases: rei, ri``
 
 ``dnf [options] reinstall <package-specs>...``
     Installs the specified packages, fails if some of the packages are either
@@ -816,7 +816,7 @@ Repoinfo Command
 Repolist Command
 ----------------
 
-``alias: rlist``
+``aliases: rlist``
 
 ``dnf [options] repolist [--enabled|--disabled|--all]``
     Depending on the exact command, lists enabled, disabled or all known
@@ -1086,13 +1086,13 @@ Remove older versions of duplicated packages (an equivalent of yum's `package-cl
 Repository-Packages Command
 ---------------------------
 
-``alias: repo-pkgs, repo-packages, repository-pkgs``
+``aliases: repo-pkgs, repo-packages, repository-pkgs``
 
 The repository-packages command allows the user to run commands on top of all packages in the repository named ``<repoid>``. However, any dependency resolution takes into account packages from all enabled repositories. Specifications ``<package-name-spec>`` and ``<package-spec>`` further limit the candidates to only those packages matching at least one of them.
 
 ``info`` subcommand lists description and summary information about packages depending on the packages' relation to the repository. ``list`` subcommand just dumps lists of that packages.
 
-``dnf [options] repository-packages <repoid> {check-update|ch-up|c-up|chup|cup} [<package-name-spec>...]``
+``dnf [options] repository-packages <repoid> {check-update|ch-up|chup} [<package-name-spec>...]``
     Non-interactively checks if updates of the specified packages in the repository are available. DNF exit code will be 100 when there are updates available and a list of the updates will be printed.
 
 ``dnf [options] repository-packages <repoid> info [--all] [<package-name-spec>...]``
@@ -1140,22 +1140,22 @@ The repository-packages command allows the user to run commands on top of all pa
 ``dnf [options] repository-packages <repoid> list --upgrades [<package-name-spec>...]``
     List packages in the repository that upgrade packages installed on the system.
 
-``dnf [options] repository-packages <repoid> {move-to|m-to|mto} [<package-name-spec>...]``
+``dnf [options] repository-packages <repoid> {move-to|mv-to|mvto} [<package-name-spec>...]``
     Reinstall all those packages that are available in the repository.
 
-``dnf [options] repository-packages <repoid> {reinstall|rei} [<package-name-spec>...]``
+``dnf [options] repository-packages <repoid> {reinstall|ri} [<package-name-spec>...]``
     Run ``reinstall-old`` subcommand. If it fails, run ``move-to`` subcommand.
 
-``dnf [options] repository-packages <repoid> {reinstall-old|rei-old|rei-o} [<package-name-spec>...]``
+``dnf [options] repository-packages <repoid> {reinstall-old|ri-old|ri-o} [<package-name-spec>...]``
     Reinstall all those packages that were installed from the repository and simultaneously are available in the repository.
 
 ``dnf [options] repository-packages <repoid> {remove|rm} [<package-name-spec>...]``
     Remove all packages installed from the repository along with any packages depending on the packages being removed. If ``clean_requirements_on_remove`` is enabled (the default) also removes any dependencies that are no longer needed.
 
-``dnf [options] repository-packages <repoid> {remove-or-distro-sync|rm-dist} [<package-name-spec>...]``
+``dnf [options] repository-packages <repoid> {remove-or-distro-sync|rm-dsync} [<package-name-spec>...]``
     Select all packages installed from the repository. Upgrade, downgrade or keep those of them that are available in another repository to match the latest version available there and remove the others along with any packages depending on the packages being removed. If ``clean_requirements_on_remove`` is enabled (the default) also removes any dependencies that are no longer needed.
 
-``dnf [options] repository-packages <repoid> {remove-or-reinstall|rm-rei} [<package-name-spec>...]``
+``dnf [options] repository-packages <repoid> {remove-or-reinstall|rm-ri} [<package-name-spec>...]``
     Select all packages installed from the repository. Reinstall those of them that are available in another repository and remove the others along with any packages depending on the packages being removed. If ``clean_requirements_on_remove`` is enabled (the default) also removes any dependencies that are no longer needed.
 
 ``dnf [options] repository-packages <repoid> {upgrade|up} [<package-name-spec>...]``
@@ -1209,8 +1209,6 @@ Shell Command
 ------------
 Swap Command
 ------------
-
-``alias: sw``
 
 ``dnf [options] swap <remove-spec> <install-spec>``
 
@@ -1294,7 +1292,7 @@ See also :ref:`\configuration_files_replacement_policy-label`.
 Upgrade-minimal Command
 -----------------------
 
-``alias: up-min, u-m, um``
+``aliases: up-min, u-m, um``
 
 ``dnf [options] upgrade-minimal``
     Updates each package to the latest version that provides bugfix, enhancement

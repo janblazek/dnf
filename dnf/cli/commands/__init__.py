@@ -248,7 +248,7 @@ class CheckUpdateCommand(Command):
     check-update command.
     """
 
-    aliases = ('check-update', 'check-upgrade', 'ch-up', 'c-up', 'chup', 'cup',)
+    aliases = ('check-update', 'check-upgrade', 'ch-up', 'chup',)
     summary = _('check for available package upgrades')
 
     @staticmethod
@@ -289,7 +289,7 @@ class RepoPkgsCommand(Command):
     class CheckUpdateSubCommand(SubCommand):
         """Implementation of the info sub-command."""
 
-        aliases = ('check-update', 'ch-up', 'c-up', 'chup', 'cup',)
+        aliases = ('check-update', 'ch-up', 'chup',)
 
         def configure(self):
             demands = self.cli.demands
@@ -417,7 +417,7 @@ class RepoPkgsCommand(Command):
     class MoveToSubCommand(SubCommand):
         """Implementation of the move-to sub-command."""
 
-        aliases = ('move-to', 'm-to', 'mto',)
+        aliases = ('move-to', 'mv-to', 'mvto',)
 
         def configure(self):
             demands = self.cli.demands
@@ -472,7 +472,7 @@ class RepoPkgsCommand(Command):
     class ReinstallOldSubCommand(SubCommand):
         """Implementation of the reinstall-old sub-command."""
 
-        aliases = ('reinstall-old', 'rei-old', 'rei-o',)
+        aliases = ('reinstall-old', 'ri-old', 'ri-o',)
 
         def configure(self):
             demands = self.cli.demands
@@ -529,7 +529,7 @@ class RepoPkgsCommand(Command):
     class ReinstallSubCommand(SubCommand):
         """Implementation of the reinstall sub-command."""
 
-        aliases = ('reinstall', 'rei',)
+        aliases = ('reinstall', 'ri',)
 
         def __init__(self, cli):
             """Initialize the command."""
@@ -560,7 +560,7 @@ class RepoPkgsCommand(Command):
     class RemoveOrDistroSyncSubCommand(SubCommand):
         """Implementation of the remove-or-distro-sync sub-command."""
 
-        aliases = ('remove-or-distro-sync', 'rm-dist',)
+        aliases = ('remove-or-distro-sync', 'rm-dsync',)
 
         def configure(self):
             demands = self.cli.demands
@@ -622,7 +622,7 @@ class RepoPkgsCommand(Command):
     class RemoveOrReinstallSubCommand(SubCommand):
         """Implementation of the remove-or-reinstall sub-command."""
 
-        aliases = ('remove-or-reinstall', 'rm-rei',)
+        aliases = ('remove-or-reinstall', 'rm-ri',)
 
         def configure(self):
             demands = self.cli.demands
