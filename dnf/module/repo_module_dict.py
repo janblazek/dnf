@@ -137,8 +137,6 @@ class RepoModuleDict(OrderedDict):
         subj = ModuleSubject(pkg_spec)
         module_version, nsvcap = subj.find_module_version(self)
 
-        print (self.get_includes(module_version.name, module_version.stream))
-
         self[module_version.name].enable(module_version.stream, assumeyes, assumeno)
 
     def disable(self, pkg_spec):
@@ -172,7 +170,7 @@ class RepoModuleDict(OrderedDict):
         repo_module.unlock()
         return
 
-    def install(self, pkg_specs, assumeyes):
+    def install(self, pkg_specs, assumeyes=False):
         preferred_versions = self.get_preferred_versions(pkg_specs)
 
         for version in preferred_versions.values():
