@@ -16,6 +16,9 @@
 
 import hawkey
 
+from dnf.exceptions import Error
+from dnf.module import module_errors, NO_DEFAULT_STREAM_ERR, NO_MODULE_ERR
+
 
 class ModuleSubject(object):
     """
@@ -39,11 +42,21 @@ class ModuleSubject(object):
         """
 
         result = (None, None)
+        stream_err = None
         for nsvcap in self.get_nsvcap_possibilities():
-            module_version = repo_module_dict.find_module_version(nsvcap.name, nsvcap.stream,
-                                                                  nsvcap.version, nsvcap.context,
-                                                                  nsvcap.arch)
-            if module_version:
-                result = (module_version, nsvcap)
-                break
+            try:
+                module_version = repo_module_dict.find_module_version(nsvcap.name, nsvcap.stream,
+                                                                      nsvcap.version, nsvcap.context,
+                                                                      nsvcap.arch)
+                if module_version:
+                    result = (module_version, nsvcap)
+                    break
+            except Error as e:
+                stream_err = e
+
+        if stream_err:
+            raise stream_err
+        elif not result[0]:
+            raise Error(module_errors[NO_MODULE_ERR].format(self.pkg_spec))
+
         return result

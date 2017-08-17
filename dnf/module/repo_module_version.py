@@ -18,7 +18,8 @@ import dnf
 import hawkey
 
 from dnf.exceptions import Error
-from dnf.module import module_errors, NO_PROFILE_ERR
+from dnf.module import module_errors, NO_PROFILE_ERR, NO_PROFILE_SPECIFIED, NO_PROFILES_AVAILABLE, \
+    POSSIBLE_PROFILES
 from dnf.subject import Subject
 
 
@@ -33,15 +34,29 @@ class RepoModuleVersion(object):
     def __lt__(self, other):
         # for finding latest
         assert self.full_stream == other.full_stream
+        if self.repo_module.conf.locked:
+            return False
         return self.module_metadata.version < other.module_metadata.version
 
     def __repr__(self):
         return self.full_version
 
-    def install(self, profiles):
+    def report_profile_error(self, profile, default_profiles_used=False):
+        if default_profiles_used:
+            msg = module_errors[NO_PROFILE_SPECIFIED].format(self.name)
+        else:
+            msg = module_errors[NO_PROFILE_ERR].format(profile)
+            if self.profiles:
+                msg += " " + module_errors[POSSIBLE_PROFILES].format(self.profiles)
+            else:
+                msg += " " + module_errors[NO_PROFILES_AVAILABLE]
+
+        raise Error(msg)
+
+    def install(self, profiles, default_profiles_used=False):
         for profile in profiles:
             if profile not in self.profiles:
-                raise Error(module_errors[NO_PROFILE_ERR].format(profile, self.profiles))
+                self.report_profile_error(profile, default_profiles_used)
 
             for single_nevra in self.profile_nevra(profile):
                 subject = Subject(single_nevra)
@@ -57,7 +72,7 @@ class RepoModuleVersion(object):
     def upgrade(self, profiles):
         for profile in profiles:
             if profile not in self.profiles:
-                raise Error(module_errors[NO_PROFILE_ERR].format(profile, self.profiles))
+                self.report_profile_error(profile)
 
             for single_nevra in self.profile_nevra(profile):
                 self.base.upgrade(single_nevra, reponame=self.repo.id)
@@ -68,7 +83,7 @@ class RepoModuleVersion(object):
     def remove(self, profiles):
         for profile in profiles:
             if profile not in self.profiles:
-                raise Error(module_errors[NO_PROFILE_ERR].format(profile, self.profiles))
+                self.report_profile_error(profile)
 
             for single_nevra in self.profile_nevra(profile):
                 remove_query = dnf.subject.Subject(single_nevra) \

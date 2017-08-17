@@ -67,7 +67,7 @@ class RepoModule(OrderedDict):
             if not assumeno and self.parent.base.output.userconfirm():
                 self.enable(stream, True, assumeno)
             else:
-                logger.info(module_errors[STREAM_NOT_ENABLED_ERR].format(stream))
+                raise Error(module_errors[STREAM_NOT_ENABLED_ERR].format(stream))
 
         self.conf.stream = stream
         self.conf.enabled = True

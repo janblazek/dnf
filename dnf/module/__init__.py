@@ -31,6 +31,10 @@ PARSING_ERR = 14
 PROFILE_NOT_INSTALLED = 15
 VERSION_LOCKED = 16
 INSTALLING_NEWER_VERSION = 17
+NO_PROFILE_SPECIFIED = 18
+POSSIBLE_PROFILES = 19
+NO_PROFILES_AVAILABLE = 20
+NO_DEFAULT_STREAM_ERR = 21
 
 module_errors = {
     LOAD_CACHE_ERR: "Cannot load from cache dir: {}",
@@ -38,16 +42,20 @@ module_errors = {
     NO_METADATA_ERR: "No available metadata for module: {}",
     NO_MODULE_OR_STREAM_ERR: "No such module: {} or active stream (enable a stream first)",
     NO_MODULE_ERR: "No such module: {}",
-    NO_PROFILE_ERR: "No such profile: {}. Possible profiles: {}",
-    NO_STREAM_ERR: "No such stream {} in {}",
+    NO_PROFILE_ERR: "No such profile: {}.",
+    NO_STREAM_ERR: "No such stream '{}' in '{}'",
     NO_ACTIVE_STREAM_ERR: "No active stream for module: {}",
-    STREAM_NOT_ENABLED_ERR: "Stream not enabled. Skipping {}",
-    DIFFERENT_STREAM_INFO: "Enabling different stream for {}",
+    STREAM_NOT_ENABLED_ERR: "Stream not enabled. Skipping '{}'",
+    DIFFERENT_STREAM_INFO: "Enabling different stream for '{}'",
     INVALID_MODULE_ERR: "Not a valid module: {}",
     LOWER_VERSION_INFO: "Using lower version due to missing profile in latest version",
     NOTHING_TO_SHOW: "Nothing to show",
-    PARSING_ERR: "Probable parsing problem of {}, try specifying MODULE-STREAM-VERSION",
+    PARSING_ERR: "Probable parsing problem of '{}', try specifying MODULE-STREAM-VERSION",
     PROFILE_NOT_INSTALLED: "Profile not installed: {}",
     VERSION_LOCKED: "'{}' is locked to version: {}",
     INSTALLING_NEWER_VERSION: "Installing newer version of '{}' than specified. Reason: {}",
+    NO_PROFILE_SPECIFIED: "No profile specified for '{}', please specify profile.",
+    POSSIBLE_PROFILES: "Possible profiles: {}",
+    NO_PROFILES_AVAILABLE: "No profiles available.",
+    NO_DEFAULT_STREAM_ERR: "No stream specified for '{}', please specify stream."
 }

@@ -531,7 +531,7 @@ class ModuleTest(unittest.TestCase):
         self.assertNotIn(rmv, installed)
 
         # install
-        rmd.install(["base-runtime"], autoenable=True)
+        rmd.install(["base-runtime"], assumeyes=True)
 
         # check module conf
         repo_module = rmd["base-runtime"]

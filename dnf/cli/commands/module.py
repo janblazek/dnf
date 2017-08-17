@@ -114,7 +114,7 @@ class ModuleCommand(commands.Command):
             demands.root_user = True
 
         def run_on_module(self):
-            self.base.repo_module_dict.install(self.opts.module_nsvp, self.opts.autoenable)
+            self.base.repo_module_dict.install(self.opts.module_nsvp, self.opts.assumeyes)
 
     class UpdateSubCommand(SubCommand):
 
@@ -210,9 +210,6 @@ class ModuleCommand(commands.Command):
         narrows.add_argument('--installed', dest='installed',
                              action='store_true',
                              help=_("show only installed modules"))
-        narrows.add_argument('--autoenable', dest='autoenable',
-                             action='store_true',
-                             help=_("auto enable stream"))
 
     def configure(self):
         try:
