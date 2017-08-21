@@ -22,22 +22,12 @@ import smartcols
 
 from dnf.conf.read import ModuleReader, ModuleDefaultsReader
 from dnf.exceptions import Error
-from dnf.module import module_errors, VERSION_LOCKED, NO_MODULE_ERR, STREAM_NOT_ENABLED_ERR, \
-    NO_ACTIVE_STREAM_ERR, INSTALLING_NEWER_VERSION, PROFILE_NOT_INSTALLED, NOTHING_TO_SHOW, \
-    NO_DEFAULT_STREAM_ERR
-from dnf.module.metadata_loader import ModuleMetadataLoader
+from dnf.module import module_errors, VERSION_LOCKED, STREAM_NOT_ENABLED_ERR, \
+    PROFILE_NOT_INSTALLED, NOTHING_TO_SHOW, \
+    NO_DEFAULT_STREAM_ERR, NO_PROFILE_SPECIFIED, INSTALLING_NEWER_VERSION
 from dnf.module.repo_module import RepoModule
-from dnf.module.repo_module_version import RepoModuleVersion
 from dnf.module.subject import ModuleSubject
 from dnf.util import first_not_none, logger, ensure_dir
-
-
-class PreferredModuleVersion(object):
-
-    def __init__(self):
-        self.moduleversion_nsvcap_pkgspec = []
-        self.preferred_version = -1
-        self.reason = None
 
 
 class RepoModuleDict(OrderedDict):
@@ -127,122 +117,132 @@ class RepoModuleDict(OrderedDict):
 
                 for requires_name, requires_stream in \
                         repo_module_version.module_metadata.requires.items():
-                    includes.update(self.get_includes_latest(requires_name, requires_stream))
+                    includes.update(self.get_includes(requires_name, requires_stream))
         except KeyError as e:
             logger.debug(e)
 
         return includes
 
-    def enable(self, pkg_spec, assumeyes, assumeno=False):
-        subj = ModuleSubject(pkg_spec)
-        module_version, nsvcap = subj.find_module_version(self)
+    def enable(self, module_spec):
+        subj = ModuleSubject(module_spec)
+        module_version, module_form = subj.find_module_version(self)
 
-        self[module_version.name].enable(module_version.stream, assumeyes, assumeno)
+        self[module_version.name].enable(module_version.stream, self.base.conf.assumeyes)
 
-    def disable(self, pkg_spec):
-        subj = ModuleSubject(pkg_spec)
-        module_version, nsvcap = subj.find_module_version(self)
+    def disable(self, module_spec):
+        subj = ModuleSubject(module_spec)
+        module_version, module_form = subj.find_module_version(self)
 
         repo_module = module_version.repo_module
         repo_module.disable()
 
-    def lock(self, pkg_spec):
-        subj = ModuleSubject(pkg_spec)
-        module_version, nsvcap = subj.find_module_version(self)
+    def lock(self, module_spec):
+        subj = ModuleSubject(module_spec)
+        module_version, module_form = subj.find_module_version(self)
 
         repo_module = module_version.repo_module
 
         if not repo_module.conf.enabled:
-            raise Error(module_errors[STREAM_NOT_ENABLED_ERR].format(pkg_spec))
+            raise Error(module_errors[STREAM_NOT_ENABLED_ERR].format(module_spec))
 
         repo_module.lock(module_version.version)
         return repo_module.conf.stream, repo_module.conf.version
 
-    def unlock(self, pkg_spec):
-        subj = ModuleSubject(pkg_spec)
-        module_version, nsvcap = subj.find_module_version(self)
+    def unlock(self, module_spec):
+        subj = ModuleSubject(module_spec)
+        module_version, module_form = subj.find_module_version(self)
 
         repo_module = module_version.repo_module
 
         if not repo_module.conf.enabled:
-            raise Error(module_errors[STREAM_NOT_ENABLED_ERR].format(pkg_spec))
+            raise Error(module_errors[STREAM_NOT_ENABLED_ERR].format(module_spec))
 
         repo_module.unlock()
         return
 
-    def install(self, pkg_specs, assumeyes=False):
-        preferred_versions = self.get_preferred_versions(pkg_specs)
+    def install(self, module_specs):
+        versions, module_specs = self.get_best_versions(module_specs)
 
-        for version in preferred_versions.values():
-            for module_version, nsvcap, pkg_spec in version.moduleversion_nsvcap_pkgspec:
-                module_version = self.decide_newer_version(module_version, pkg_spec,
-                                                           version.preferred_version,
-                                                           version.reason)
+        for module_version, profiles, default_profiles in versions.values():
+            if module_version.repo_module.conf.locked:
+                logger.warning(module_errors[VERSION_LOCKED]
+                               .format(module_version.name,
+                                       module_version.repo_module.conf.version))
+                continue
 
-                if module_version.repo_module.conf.locked:
-                    continue
+            self.enable("{}:{}".format(module_version.name, module_version.stream))
 
-                self.enable("{}:{}".format(module_version.name, module_version.stream), assumeyes)
+            if module_version.version > module_version.repo_module.conf.version:
+                profiles.extend(module_version.repo_module.conf.profiles)
+                profiles = list(set(profiles))
 
-                if nsvcap.profile:
-                    profiles = [nsvcap.profile]
-                    default_profiles_used = False
-                else:
-                    profiles = module_version.repo_module.defaults.profiles
-                    default_profiles_used = True
+            module_version.install(profiles, default_profiles)
 
-                if module_version.version > module_version.repo_module.conf.version:
-                    profiles.extend(module_version.repo_module.conf.profiles)
-                    profiles = list(set(profiles))
+        return module_specs
 
-                pkg_specs.remove(pkg_spec)
-                module_version.install(profiles, default_profiles_used)
+    def get_best_versions(self, module_specs):
+        best_versions = {}
+        skipped = []
+        for module_spec in module_specs:
+            subj = ModuleSubject(module_spec)
+            module_version, module_form = subj.find_module_version(self)
 
-        return pkg_specs
-
-    def decide_newer_version(self, module_version, pkg_spec, preferred_version, reason):
-        if int(preferred_version) != module_version.version:
-            logger.info(module_errors[INSTALLING_NEWER_VERSION].format(pkg_spec, reason))
-            module_version = self.find_module_version(module_version.name, module_version.stream,
-                                                      preferred_version)
-        return module_version
-
-    def get_preferred_versions(self, pkg_specs):
-        preferred_versions = {}
-        for pkg_spec in pkg_specs:
-            subj = ModuleSubject(pkg_spec)
-            module_version, nsvcap = subj.find_module_version(self)
+            if not module_version:
+                skipped.append(module_spec)
+                continue
 
             key = "{}:{}".format(module_version.name, module_version.stream)
-            versions = preferred_versions.setdefault(key, PreferredModuleVersion())
-            versions.moduleversion_nsvcap_pkgspec.append([module_version, nsvcap, pkg_spec])
-            if versions.preferred_version < module_version.version:
-                versions.preferred_version = module_version.version
-                versions.reason = pkg_spec
+            if key in best_versions:
+                best_version, profiles, default_profiles = best_versions[key]
 
-        return preferred_versions
+                if module_form.profile:
+                    profiles.append(module_form.profile)
+                else:
+                    default_profiles.extend(module_version.repo_module.defaults.profiles)
 
-    def upgrade(self, pkg_specs):
-        for pkg_spec in pkg_specs:
-            subj = ModuleSubject(pkg_spec)
-            module_version, nsvcap = subj.find_module_version(self)
+                if best_version < module_version:
+                    logger.info(module_errors[INSTALLING_NEWER_VERSION].format(best_version,
+                                                                               module_version))
+                    best_versions[key] = [module_version, profiles, default_profiles]
+                else:
+                    best_versions[key] = [best_version, profiles, default_profiles]
+            else:
+                default_profiles = []
+                profiles = [module_form.profile]
+                if not module_form.profile:
+                    if not module_version.repo_module.defaults:
+                        raise Error(module_errors[NO_PROFILE_SPECIFIED].format(key))
+                    default_profiles = module_version.repo_module.defaults.profiles
+                    profiles = []
+
+                best_versions[key] = [module_version, profiles, default_profiles]
+
+        return best_versions, skipped
+
+    def upgrade(self, module_specs):
+        for module_spec in module_specs:
+            subj = ModuleSubject(module_spec)
+            module_version, module_form = subj.find_module_version(self)
 
             if module_version.repo_module.conf.locked:
                 continue
 
-            conf = self[nsvcap.name].conf
+            conf = self[module_form.name].conf
             if conf:
                 installed_profiles = conf.profiles
             else:
                 installed_profiles = []
-            if nsvcap.profile:
-                if nsvcap.profile not in installed_profiles:
-                    raise Error(module_errors[PROFILE_NOT_INSTALLED].format(pkg_spec))
-                profiles = [nsvcap.profile]
+            if module_form.profile:
+                if module_form.profile not in installed_profiles:
+                    raise Error(module_errors[PROFILE_NOT_INSTALLED].format(module_spec))
+                profiles = [module_form.profile]
             else:
                 profiles = installed_profiles
 
+            module_specs.remove(module_spec)
             module_version.upgrade(profiles)
+
+        return module_specs
 
     def upgrade_all(self):
         modules = []
@@ -255,33 +255,26 @@ class RepoModuleDict(OrderedDict):
         modules.sort()
         self.upgrade(modules)
 
-    def remove(self, pkg_specs):
-        for pkg_spec in pkg_specs:
-            subj = ModuleSubject(pkg_spec)
-            module_version, nsvcap = subj.find_module_version(self)
+    def remove(self, module_specs):
+        for module_spec in module_specs:
+            subj = ModuleSubject(module_spec)
+            module_version, module_form = subj.find_module_version(self)
 
-            conf = self[nsvcap.name].conf
+            conf = self[module_form.name].conf
             if conf:
                 installed_profiles = conf.profiles
             else:
                 installed_profiles = []
-            if nsvcap.profile:
-                if nsvcap.profile not in installed_profiles:
-                    raise Error(module_errors[PROFILE_NOT_INSTALLED].format(pkg_spec))
-                profiles = [nsvcap.profile]
+            if module_form.profile:
+                if module_form.profile not in installed_profiles:
+                    raise Error(module_errors[PROFILE_NOT_INSTALLED].format(module_spec))
+                profiles = [module_form.profile]
             else:
                 profiles = installed_profiles
 
             module_version.remove(profiles)
 
-    def load_modules(self, repo):
-        loader = ModuleMetadataLoader(repo)
-        for module_metadata in loader.load():
-            module_version = RepoModuleVersion(module_metadata, base=self.base, repo=repo)
-
-            self.add(module_version)
-
-    def read_all_modules(self):
+    def read_all_module_confs(self):
         module_reader = ModuleReader(self.get_modules_dir())
         for conf in module_reader:
             repo_module = self.setdefault(conf.name, RepoModule())
@@ -307,9 +300,9 @@ class RepoModuleDict(OrderedDict):
     def get_module_defaults_dir(self):
         return self.base.conf.moduledefaultsdir
 
-    def get_info(self, pkg_spec):
-        subj = ModuleSubject(pkg_spec)
-        module_version, nsvcap = subj.find_module_version(self)
+    def get_info(self, module_spec):
+        subj = ModuleSubject(module_spec)
+        module_version, module_form = subj.find_module_version(self)
 
         lines = {"Name": module_version.name,
                  "Stream": module_version.stream,
@@ -335,9 +328,9 @@ class RepoModuleDict(OrderedDict):
 
         return table
 
-    def get_full_info(self, pkg_spec):
-        subj = ModuleSubject(pkg_spec)
-        module_version, nsvcap = subj.find_module_version(self)
+    def get_full_info(self, module_spec):
+        subj = ModuleSubject(module_spec)
+        module_version, module_form = subj.find_module_version(self)
 
         return module_version.module_metadata.dumps().rstrip("\n")
 

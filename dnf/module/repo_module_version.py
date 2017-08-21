@@ -53,10 +53,19 @@ class RepoModuleVersion(object):
 
         raise Error(msg)
 
-    def install(self, profiles, default_profiles_used=False):
+    def install(self, profiles, default_profiles):
+        self._install_profiles(profiles, False)
+        self._install_profiles(default_profiles, True)
+
+        profiles.extend(self.repo_module.conf.profiles)
+        profiles.extend(default_profiles)
+        self.base._module_persistor.set_data(self.repo_module, stream=self.stream,
+                                             version=self.version, profiles=sorted(set(profiles)))
+
+    def _install_profiles(self, profiles, defaults_used):
         for profile in profiles:
             if profile not in self.profiles:
-                self.report_profile_error(profile, default_profiles_used)
+                self.report_profile_error(profile, defaults_used)
 
             for single_nevra in self.profile_nevra(profile):
                 subject = Subject(single_nevra)
@@ -64,10 +73,6 @@ class RepoModuleVersion(object):
 
                 self.base.install(single_nevra, reponame=self.repo.id, forms=hawkey.FORM_NEVR)
                 self.base._goal.group_members.add(nevra_obj.name)
-
-        profiles.extend(self.repo_module.conf.profiles)
-        self.base._module_persistor.set_data(self.repo_module, stream=self.stream,
-                                             version=self.version, profiles=sorted(set(profiles)))
 
     def upgrade(self, profiles):
         for profile in profiles:
