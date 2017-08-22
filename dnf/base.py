@@ -1825,7 +1825,8 @@ class Base(object):
                 for profile in repo_module_version.repo_module.conf.profiles:
                     filtered_rpms_name.append(repo_module_version.rpms(profile))
 
-            q = q.filter(name__neq=filtered_rpms_name)
+            for rpm in filtered_rpms_name:
+                q = q.filter(name__neq=rpm)
 
             # add obsoletes into transaction
             if self.conf.obsoletes:

@@ -358,7 +358,7 @@ class RepoModuleDict(OrderedDict):
 
         for version in self.list_module_version_all():
             conf = version.parent.parent.conf
-            if conf is not None and conf.enabled and conf.stream == version.parent.stream:
+            if conf is not None and conf.enabled and conf.stream == version.stream:
                 versions.append(version)
 
         return versions
@@ -378,7 +378,8 @@ class RepoModuleDict(OrderedDict):
 
         for version in self.list_module_version_all():
             conf = version.parent.parent.conf
-            if conf is not None and conf.enabled and conf.version:
+            if conf is not None and conf.enabled and conf.version == version.version and \
+                    conf.stream == version.stream:
                 versions.append(version)
 
         return versions
