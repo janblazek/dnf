@@ -190,6 +190,19 @@ class Base(object):
         self.repo_module_dict.read_all_module_defaults()
         self._module_persistor = ModulePersistor()
 
+    def use_module_includes(self):
+        for repo_module in self.repo_module_dict.values():
+            if repo_module.conf and repo_module.conf.enabled:
+                includes, repos = self.repo_module_dict.get_includes_latest(repo_module.name,
+                                                                            repo_module.conf.stream)
+                for rpm in includes:
+                    subj = dnf.subject.Subject(rpm)
+                    pkgs = subj.get_best_query(self.sack)
+                    self.sack.add_includes(pkgs)
+
+                for repo in repos:
+                    self.sack.set_use_includes(True, repo.id)
+
     def _store_persistent_data(self):
         if self._repo_persistor and not self.conf.cacheonly:
             expired = [r.id for r in self.repos.iter_enabled() if r._md_expired]
@@ -641,6 +654,7 @@ class Base(object):
         """Build the transaction set."""
         exc = None
         self._finalize_comps_trans()
+        self.use_module_includes()
 
         timer = dnf.logging.Timer('depsolve')
         self._ds_callback.start()
